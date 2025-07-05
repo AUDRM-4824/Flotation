@@ -202,6 +202,23 @@
             margin: 5px 0;
             color: #7f8c8d;
         }
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .effects-info {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .flotation-cell {
+                width: 90%;
+                height: 400px;
+            }
+            .title {
+                font-size: 2em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -332,10 +349,10 @@
         // Get DOM elements
         const collectorSlider = document.getElementById('collector-slider');
         const airSlider = document.getElementById('air-slider');
-        const frother Slider = document.getElementById('frother-slider');
+        const frother_Slider = document.getElementById('frother-slider');
         const collectorValue = document.getElementById('collector-value');
         const airValue = document.getElementById('air-value');
-        const frother Value = document.getElementById('frother-value');
+        const frother_Value = document.getElementById('frother-value');
         const recoveryValueEl = document.getElementById('recovery-value');
         const gradeValueEl = document.getElementById('grade-value');
         const targetTextEl = document.getElementById('target-text');
@@ -344,14 +361,14 @@
         function getCombinedMetrics(collector, air, frother) {
             const collectorMetrics = COLLECTOR_LOOKUP[collector] || COLLECTOR_LOOKUP[75];
             const airMetrics = AIR_RATE_LOOKUP[air] || AIR_RATE_LOOKUP[25];
-            const frother Metrics = FROTHER_LOOKUP[frother] || FROTHER_LOOKUP[40];
+            const frother_Metrics = FROTHER_LOOKUP[frother] || FROTHER_LOOKUP[40];
             
             const combinedRecovery = collectorMetrics.recovery * 0.50 + 
                                    airMetrics.recovery * 0.35 + 
-                                   frother Metrics.recovery * 0.15;
+                                   frother_Metrics.recovery * 0.15;
             const combinedGrade = collectorMetrics.grade * 0.50 + 
                                 airMetrics.grade * 0.35 + 
-                                frother Metrics.grade * 0.15;
+                                frother_Metrics.grade * 0.15;
             
             return {recovery: combinedRecovery, grade: combinedGrade};
         }
@@ -359,7 +376,7 @@
         function updateMetrics() {
             const collector = parseInt(collectorSlider.value);
             const air = parseInt(airSlider.value);
-            const frother = parseInt(frother Slider.value);
+            const frother = parseInt(frother_Slider.value);
             
             const targetMetrics = getCombinedMetrics(collector, air, frother);
             
@@ -371,12 +388,12 @@
             // Update display
             recoveryValueEl.textContent = currentRecovery.toFixed(1);
             gradeValueEl.textContent = currentGrade.toFixed(1);
-            targetTextEl.textContent = `${targetMetrics.recovery.toFixed(1)}% Recovery, ${targetMetrics.grade.toFixed(1)}% Grade`;
+            targetTextEl.textContent = targetMetrics.recovery.toFixed(1) + '% Recovery, ' + targetMetrics.grade.toFixed(1) + '% Grade';
             
             // Update slider values
             collectorValue.textContent = collector;
             airValue.textContent = air;
-            frother Value.textContent = frother;
+            frother_Value.textContent = frother;
         }
 
         function createParticle() {
@@ -389,12 +406,14 @@
             flotationCell.appendChild(particle);
             
             // Animate particle
-            const animate = () => {
+            const animate = function() {
                 const currentTop = parseInt(particle.style.top);
                 particle.style.top = (currentTop + 1) + 'px';
                 
                 if (currentTop > 550) {
-                    particle.remove();
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
                 } else {
                     setTimeout(animate, 50);
                 }
@@ -412,12 +431,14 @@
             flotationCell.appendChild(bubble);
             
             // Animate bubble
-            const animate = () => {
+            const animate = function() {
                 const currentTop = parseInt(bubble.style.top);
                 bubble.style.top = (currentTop - 2) + 'px';
                 
                 if (currentTop < 50) {
-                    bubble.remove();
+                    if (bubble.parentNode) {
+                        bubble.parentNode.removeChild(bubble);
+                    }
                 } else {
                     setTimeout(animate, 30);
                 }
@@ -429,13 +450,17 @@
             // Clear particles and bubbles
             const particles = flotationCell.querySelectorAll('.particle');
             const bubbles = flotationCell.querySelectorAll('.bubble');
-            particles.forEach(p => p.remove());
-            bubbles.forEach(b => b.remove());
+            particles.forEach(function(p) { 
+                if (p.parentNode) p.parentNode.removeChild(p); 
+            });
+            bubbles.forEach(function(b) { 
+                if (b.parentNode) b.parentNode.removeChild(b); 
+            });
             
             // Reset metrics immediately
             const collector = parseInt(collectorSlider.value);
             const air = parseInt(airSlider.value);
-            const frother = parseInt(frother Slider.value);
+            const frother = parseInt(frother_Slider.value);
             const targetMetrics = getCombinedMetrics(collector, air, frother);
             
             currentRecovery = targetMetrics.recovery;
@@ -446,7 +471,7 @@
         // Event listeners
         collectorSlider.addEventListener('input', updateMetrics);
         airSlider.addEventListener('input', updateMetrics);
-        frother Slider.addEventListener('input', updateMetrics);
+        frother_Slider.addEventListener('input', updateMetrics);
 
         // Animation loops
         setInterval(createParticle, 500);
